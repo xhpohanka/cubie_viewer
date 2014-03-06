@@ -32,7 +32,7 @@ def view_images():
     global viewer_run
     curr_set = images[0]
 
-    # main_surface = pygame.display.set_mode(resolution)
+    main_surface = pygame.display.set_mode(resolution)
 
     i = 0
     pygame.time.set_timer(CHANGE_IMAGE_EVENT, timeout)
@@ -48,7 +48,7 @@ def view_images():
                 if i >= len(curr_set):
                     i = 0
                 print "next image"
-                # view_image(curr_set[i], main_surface)
+                view_image(curr_set[i], main_surface)
 
             if event.type == BLANK_SCREEN_EVENT:
                 print "BLANK EVENT"
@@ -56,8 +56,9 @@ def view_images():
             elif event.type == BTN_EVENT:
                 i = 0
                 curr_set = images[event.btn]
-                # view_image(curr_set[i], main_surface)
+                view_image(curr_set[i], main_surface)
                 pygame.time.set_timer(BLANK_SCREEN_EVENT, blank_timeout)
+                print "Button " + str(event.btn) + " pressed"
 
             elif ((event.type == KEYDOWN and event.key == K_ESCAPE) or
                   event.type == pygame.QUIT):
@@ -71,7 +72,7 @@ def control_thread():
     while True:
         for i in range(0, NOOF_BUTTONS):
             if gpio.check_btn(i):
-                pygame.event.post(pygame.event.Event(BTN_EVENT), btn=i)
+                pygame.event.post(pygame.event.Event(BTN_EVENT, btn=i))
                 break
 
         if viewer_run is False:

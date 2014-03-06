@@ -6,6 +6,7 @@ pin_nums_in = (32, 31, 30, 29, 28, 43, 42, 41)
 pin_names_in = ('pd0', 'pd1', 'pd2', 'pd3', 'pd4', 'pd5', 'pd6', 'pd7')
 pin_nums_out = (14, 13, 12, 27, 26, 25, 24, 23)
 pin_names_out = ('pi4', 'pi5', 'pi6', 'pi7', 'pi8', 'pi9', 'pe4', 'pe5')
+btn_active = 1
 
 
 def btn_dir(num):
@@ -60,7 +61,7 @@ def check_btn(num):
     fil = open(os.path.join(btn_dir(num), 'value'))
     val = fil.read()
     fil.close()
-    if val == '0':
+    if int(val) == btn_active:
         return True
     else:
         return False
