@@ -5,10 +5,10 @@ from pygame.locals import *
 import os
 import threading
 import gpio
+import time
 
-
-resolution = (1920, 900)
-timeout = 10 * 1000
+resolution = (1280, 720)
+timeout = 5 * 1000
 blank_timeout = 60 * 1000
 
 viewer_run = False
@@ -24,15 +24,16 @@ BTN_EVENT = pygame.USEREVENT + 3
 def view_image(image, surface):
     picture = pygame.image.load(image)
     picture = pygame.transform.scale(picture, resolution)
-    surface.blit(picture, (0, 0))
-    pygame.display.update()
+ #   surface.blit(picture, (0, 0))
+  #  pygame.display.update()
 
 
 def view_images():
     global viewer_run
     curr_set = images[0]
 
-    main_surface = pygame.display.set_mode(resolution)
+#    main_surface = pygame.display.set_mode(resolution)
+    main_surface = 0
 
     i = 0
     pygame.time.set_timer(CHANGE_IMAGE_EVENT, timeout)
@@ -48,7 +49,8 @@ def view_images():
                 if i >= len(curr_set):
                     i = 0
                 print "next image"
-                view_image(curr_set[i], main_surface)
+                if len(curr_set) > 0:
+                    view_image(curr_set[i], main_surface)
 
             if event.type == BLANK_SCREEN_EVENT:
                 print "BLANK EVENT"
@@ -56,7 +58,8 @@ def view_images():
             elif event.type == BTN_EVENT:
                 i = 0
                 curr_set = images[event.btn]
-                view_image(curr_set[i], main_surface)
+                if len(curr_set) > 0:
+                    view_image(curr_set[i], main_surface)
                 pygame.time.set_timer(BLANK_SCREEN_EVENT, blank_timeout)
                 print "Button " + str(event.btn) + " pressed"
 
@@ -73,6 +76,7 @@ def control_thread():
         for i in range(0, NOOF_BUTTONS):
             if gpio.check_btn(i):
                 pygame.event.post(pygame.event.Event(BTN_EVENT, btn=i))
+                time.sleep(0.2)
                 break
 
         if viewer_run is False:
