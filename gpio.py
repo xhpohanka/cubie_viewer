@@ -58,7 +58,11 @@ def set_led():
 
 
 def check_btn(num):
-    fil = open(os.path.join(btn_dir(num), 'value'))
+    try:
+        fil = open(os.path.join(btn_dir(num), 'value'))
+    except IOError:
+        return False
+
     val = fil.read()
     fil.close()
     if int(val) == btn_active:
@@ -68,6 +72,10 @@ def check_btn(num):
 
 
 def set_led_value(led, val):
-    valfile = open(os.path.join(led_dir(led), 'value'), 'w')
+    try:
+        valfile = open(os.path.join(led_dir(led), 'value'), 'w')
+    except IOError:
+        return False
+
     valfile.write(str(val))
     valfile.close()

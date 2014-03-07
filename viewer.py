@@ -6,13 +6,15 @@ import os
 import threading
 import gpio
 import time
+import sys
 
-resolution = (1280, 720)
-timeout = 5 * 1000
-blank_timeout = 60 * 1000
+resolution = (0, 0)
+timeout = 10 * 1000
+blank_timeout = 100 * 1000
 
 viewer_run = False
 images = []
+blank_image = 'blank.jpg'
 
 NOOF_BUTTONS = 5
 
@@ -24,16 +26,15 @@ BTN_EVENT = pygame.USEREVENT + 3
 def view_image(image, surface):
     picture = pygame.image.load(image)
     picture = pygame.transform.scale(picture, resolution)
- #   surface.blit(picture, (0, 0))
-  #  pygame.display.update()
+    surface.blit(picture, (0, 0))
+    pygame.display.update()
 
 
-def view_images():
+def view_images(main_surface):
     global viewer_run
-    curr_set = images[0]
+    blank = True
 
-#    main_surface = pygame.display.set_mode(resolution)
-    main_surface = 0
+    view_image(blank_image, main_surface)
 
     i = 0
     pygame.time.set_timer(CHANGE_IMAGE_EVENT, timeout)
@@ -44,7 +45,7 @@ def view_images():
                 break
 
         for event in pygame.event.get():
-            if event.type == CHANGE_IMAGE_EVENT:
+            if event.type == CHANGE_IMAGE_EVENT and blank is False:
                 i += 1
                 if i >= len(curr_set):
                     i = 0
@@ -53,9 +54,12 @@ def view_images():
                     view_image(curr_set[i], main_surface)
 
             if event.type == BLANK_SCREEN_EVENT:
+                view_image(blank_image, main_surface)
+                blank = True
                 print "BLANK EVENT"
 
             elif event.type == BTN_EVENT:
+                blank = False
                 i = 0
                 curr_set = images[event.btn]
                 if len(curr_set) > 0:
@@ -76,6 +80,9 @@ def control_thread():
         for i in range(0, NOOF_BUTTONS):
             if gpio.check_btn(i):
                 pygame.event.post(pygame.event.Event(BTN_EVENT, btn=i))
+                for x in range(0, NOOF_BUTTONS):
+                    gpio.set_led(x, 0)
+                gpio.set_led(i, 1)
                 time.sleep(0.2)
                 break
 
@@ -99,18 +106,40 @@ def load_images(dir):
 def main():
     global viewer_run
     global images
+    global resolution
 
     pygame.init()
 
+    modes = pygame.display.list_modes()
+    if len(modes) > 0:
+        resolution = modes[0]
+    else:
+        print "No available display modes"
+        pygame.quit()
+        sys.exit(1)
+
+    try:
+        main_surface = pygame.display.set_mode(resolution)
+    except pygame.error:
+        print "Cannot open display"
+        pygame.quit()
+        sys.exit(1)
+
     for i in range(0, NOOF_BUTTONS):
         images.append([])
-        images[i] = load_images('/home/cubie/obr' + str(i + 1))
+        try:
+            images[i] = load_images('/home/cubie/obr' + str(i + 1))
+        except OSError:
+            print "Missing picture directory"
 
-    gpio.set_btn()
-    gpio.set_led()
+    try:
+        gpio.set_btn()
+        gpio.set_led()
+    except IOError:
+        print "Cannot open GPIO sysfs files, probably not running on Cubie"
 
     viewer_run = True
-    t1 = threading.Thread(target=view_images)
+    t1 = threading.Thread(target=view_images, args=(main_surface,))
     t2 = threading.Thread(target=control_thread)
     t1.start()
     t2.start()
