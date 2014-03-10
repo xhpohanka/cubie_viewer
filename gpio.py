@@ -6,7 +6,7 @@ pin_nums_in = (32, 31, 30, 29, 28, 43, 42, 41)
 pin_names_in = ('pd0', 'pd1', 'pd2', 'pd3', 'pd4', 'pd5', 'pd6', 'pd7')
 pin_nums_out = (14, 13, 12, 27, 26, 25, 24, 23)
 pin_names_out = ('pi4', 'pi5', 'pi6', 'pi7', 'pi8', 'pi9', 'pe4', 'pe5')
-btn_active = 1
+btn_active = 0
 
 
 def btn_dir(num):
@@ -21,7 +21,7 @@ def led_dir(num):
     return path
 
 
-def set_btn():
+def setup_btn():
     gpio_export = open(os.path.join(gpio_base_path, 'export'), 'w')
     for i in range(0, len(pin_nums_in)):
         pin = str(pin_nums_in[i])
@@ -39,7 +39,7 @@ def set_btn():
         dirfile.close()
 
 
-def set_led():
+def setup_led():
     gpio_export = open(os.path.join(gpio_base_path, 'export'), 'w')
     for i in range(0, len(pin_nums_out)):
         pin = str(pin_nums_out[i])
@@ -75,7 +75,13 @@ def set_led_value(led, val):
     try:
         valfile = open(os.path.join(led_dir(led), 'value'), 'w')
     except IOError:
-        return False
+        print "cannot set led " + str(led)
+        return
 
     valfile.write(str(val))
     valfile.close()
+
+
+def set_all_led_value(val):
+    for led in range(0, len(pin_nums_out)):
+        set_led_value(led, val)
