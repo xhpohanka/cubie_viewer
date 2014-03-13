@@ -11,7 +11,7 @@ import sys
 
 resolution = (0, 0)
 timeout = 10 * 1000
-blank_timeout = 100 * 1000
+blank_timeout = 70 * 1000
 
 viewer_run = False
 images = []
@@ -44,6 +44,8 @@ def view_images(main_surface):
     pygame.time.set_timer(CHANGE_IMAGE_EVENT, timeout)
     pygame.time.set_timer(BLANK_SCREEN_EVENT, blank_timeout)
 
+    gpio.set_stripes_value(1)
+
     while True:
         if viewer_run is False:
                 break
@@ -59,6 +61,7 @@ def view_images(main_surface):
                 pic_counter += 1
                 if pic_counter >= len(curr_set):
                     pic_counter = 0
+
                 print "next image"
                 if pic_counter < len(curr_set):
                     view_image(curr_set[pic_counter], main_surface)
@@ -67,6 +70,7 @@ def view_images(main_surface):
                 view_image(blank_image, main_surface)
                 blank = True
                 print "BLANK EVENT"
+                gpio.set_stripes_value(1)
                 for i in range(0, NOOF_BUTTONS):
                     gpio.set_led_value(i, 0)
 
@@ -88,6 +92,7 @@ def view_images(main_surface):
                     view_image(curr_set[pic_counter], main_surface)
                 pygame.time.set_timer(BLANK_SCREEN_EVENT, blank_timeout)
                 pygame.time.set_timer(CHANGE_IMAGE_EVENT, timeout)
+                gpio.set_stripes_value(0)
                 gpio.set_all_led_value(0)
                 gpio.set_led_value(position, 1)
                 print "Button " + str(position) + " pressed"

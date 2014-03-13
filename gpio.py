@@ -1,12 +1,15 @@
 import os
 
 gpio_base_path = '/sys/class/gpio/'
-# gpio_base_path = '.'
+# gpio_base_path = './'
 pin_nums_in = (32, 31, 30, 29, 28, 43, 42, 41)
 pin_names_in = ('pd0', 'pd1', 'pd2', 'pd3', 'pd4', 'pd5', 'pd6', 'pd7')
-pin_nums_out = (14, 13, 12, 27, 26, 25, 24, 23)
-pin_names_out = ('pi4', 'pi5', 'pi6', 'pi7', 'pi8', 'pi9', 'pe4', 'pe5')
+pin_nums_out = (14, 13, 12, 27, 26, 25, 24, 23, 22, 21, 20, 35)
+pin_names_out = ('pi4', 'pi5', 'pi6', 'pi7', 'pi8', 'pi9', 'pe4', 'pe5',
+                 'pe6', 'pe7', 'pe8', 'pe9')
 btn_active = 0
+
+NOOF_LEDS = 5
 
 
 def btn_dir(num):
@@ -83,5 +86,10 @@ def set_led_value(led, val):
 
 
 def set_all_led_value(val):
-    for led in range(0, len(pin_nums_out)):
+    for led in range(0, NOOF_LEDS):
+        set_led_value(led, val)
+
+
+def set_stripes_value(val):
+    for led in (9, 10, 11):
         set_led_value(led, val)
