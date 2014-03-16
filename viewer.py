@@ -11,7 +11,6 @@ import sys
 
 resolution = (0, 0)
 timeout = 10 * 1000
-blank_timeout = 70 * 1000
 
 viewer_run = False
 images = []
@@ -22,8 +21,7 @@ images_dir = '/home/cubie/'
 NOOF_BUTTONS = 5
 
 CHANGE_IMAGE_EVENT = pygame.USEREVENT + 1
-BLANK_SCREEN_EVENT = pygame.USEREVENT + 2
-BTN_EVENT = pygame.USEREVENT + 3
+BTN_EVENT = pygame.USEREVENT + 2
 
 
 def view_image(image, surface):
@@ -35,14 +33,11 @@ def view_image(image, surface):
 
 def view_images(main_surface):
     global viewer_run
-    blank = True
 
     view_image(blank_image, main_surface)
 
     curr_set = []
     pic_counter = 0
-    pygame.time.set_timer(CHANGE_IMAGE_EVENT, timeout)
-    pygame.time.set_timer(BLANK_SCREEN_EVENT, blank_timeout)
 
     gpio.set_stripes_value(1)
 
@@ -57,25 +52,20 @@ def view_images(main_surface):
                 viewer_run = False
                 break
 
-            if event.type == CHANGE_IMAGE_EVENT and blank is False:
+            if event.type == CHANGE_IMAGE_EVENT:
                 pic_counter += 1
-                if pic_counter >= len(curr_set):
-                    pic_counter = 0
 
-                print "next image"
-                if pic_counter < len(curr_set):
+                if pic_counter >= len(curr_set):
+                    view_image(blank_image, main_surface)
+                    gpio.set_all_led_value(0)
+                    gpio.set_stripes_value(1)
+                    pygame.time.set_timer(CHANGE_IMAGE_EVENT, 0)
+                    pic_counter = 0
+                    print "BLANK"
+                else:
                     view_image(curr_set[pic_counter], main_surface)
 
-            if event.type == BLANK_SCREEN_EVENT:
-                view_image(blank_image, main_surface)
-                blank = True
-                print "BLANK EVENT"
-                gpio.set_stripes_value(1)
-                for i in range(0, NOOF_BUTTONS):
-                    gpio.set_led_value(i, 0)
-
             if event.type == BTN_EVENT or event.type == KEYDOWN:
-                blank = False
                 pic_counter = 0
 
                 if event.type == KEYDOWN:
@@ -90,7 +80,7 @@ def view_images(main_surface):
                 curr_set = images[position]
                 if pic_counter < len(curr_set):
                     view_image(curr_set[pic_counter], main_surface)
-                pygame.time.set_timer(BLANK_SCREEN_EVENT, blank_timeout)
+
                 pygame.time.set_timer(CHANGE_IMAGE_EVENT, timeout)
                 gpio.set_stripes_value(0)
                 gpio.set_all_led_value(0)
@@ -144,7 +134,7 @@ def main():
         sys.exit(1)
 
     try:
-        main_surface = pygame.display.set_mode(resolution, FULLSCREEN)
+        main_surface = pygame.display.set_mode(resolution)
     except pygame.error:
         print "Cannot open display"
         pygame.quit()
